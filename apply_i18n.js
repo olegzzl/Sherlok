@@ -1,0 +1,219 @@
+const fs = require('fs');
+const dictObj = require('./i18n_dict');
+
+const filepath = 'd:/Insta Sites/Scherlock Holmes/code.html';
+let content = fs.readFileSync(filepath, 'utf-8');
+
+// The language switcher to inject
+const switcher = '<div class="mb-2 space-x-2 font-cinzel text-sherlock-gold">\\n' +
+'<button onclick="setLang(\\'ru\\')" class="lang-btn text-white transition-colors" data-lang-btn="ru">RU</button>\\n' +
+'<span>|</span>\\n' +
+'<button onclick="setLang(\\'en\\')" class="lang-btn text-sherlock-gold-dark hover:text-white transition-colors" data-lang-btn="en">EN</button>\\n' +
+'<span>|</span>\\n' +
+'<button onclick="setLang(\\'uk\\')" class="lang-btn text-sherlock-gold-dark hover:text-white transition-colors" data-lang-btn="uk">UK</button>\\n' +
+'</div>\\n' +
+'<span class="text-sherlock-gold-dark" data-i18n="status_label">СТАТУС ДЕЛА:</span><br/>';
+
+const replacements = [
+  // Header Nav
+  { old: `onclick="openModal('about-modal')">ОБО МНЕ</a>`, new: `onclick="openModal('about-modal')" data-i18n="nav_about">ОБО МНЕ</a>` },
+  { old: `href="#cases">ДЕЛА</a>`, new: `href="#cases" data-i18n="nav_cases">ДЕЛА</a>` },
+  { old: `href="#method">МОЙ МЕТОД</a>`, new: `href="#method" data-i18n="nav_method">МОЙ МЕТОД</a>` },
+  { old: `href="#specializations">ЧЕМ Я ЗАНИМАЮСЬ</a>`, new: `href="#specializations" data-i18n="nav_spec">ЧЕМ Я ЗАНИМАЮСЬ</a>` },
+  { old: `onclick="openModal('contact-modal')">КОНТАКТЫ</a>`, new: `onclick="openModal('contact-modal')" data-i18n="nav_contact">КОНТАКТЫ</a>` },
+  
+  // Header status
+  { old: `БЕЙКЕР-СТРИТ<br/>`, new: `<span data-i18n="address_street">БЕЙКЕР-СТРИТ</span><br/>` },
+  { old: `ЛОНДОН\n`, new: `<span data-i18n="address_city">ЛОНДОН</span>\n` },
+  { old: `<span class="text-sherlock-gold-dark">СТАТУС ДЕЛА:</span><br/>`, new: switcher },
+  { old: `<span class="text-sherlock-green tracking-widest">ДОСТУПЕН</span>`, new: `<span class="text-sherlock-green tracking-widest" data-i18n="status_value">ДОСТУПЕН</span>` },
+  
+  // Hero
+  { old: `SHERLOCK<br/>HOLMES`, new: `<span data-i18n="hero_title">SHERLOCK<br/>HOLMES</span>` },
+  { old: `КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ\n        </h2>`, new: `<span data-i18n="hero_subtitle">КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</span>\n        </h2>` },
+  { old: `Когда полиция заходит в тупик —<br/>я начинаю расследование.`, new: `<span data-i18n="hero_desc">Когда полиция заходит в тупик —<br/>я начинаю расследование.</span>` },
+  { old: `ПЕРЕДАТЬ ДЕЛО\n          </button>`, new: `<span data-i18n="hero_btn_submit">ПЕРЕДАТЬ ДЕЛО</span>\n          </button>` },
+  { old: `ОБО МНЕ\n          </button>`, new: `<span data-i18n="hero_btn_about">ОБО МНЕ</span>\n          </button>` },
+  
+  // Cases
+  { old: `>АРХИВ ДЕЛ</h3>`, new: ` data-i18n="archive_title">АРХИВ ДЕЛ</h3>` },
+  { old: `>СОБАКА БАСКЕРВИЛЕЙ</h4>`, new: ` data-i18n="case_1_title">СОБАКА БАСКЕРВИЛЕЙ</h4>` },
+  { old: `>Семейная тайна, необъяснимые события, подозрительная смерть.</p>`, new: ` data-i18n="case_1_desc">Семейная тайна, необъяснимые события, подозрительная смерть.</p>` },
+  { old: `>ЗАДАЧА:</strong> Защитить наследника рода Баскервилей.</p>`, new: ` data-i18n="case_1_goal_label">ЗАДАЧА:</strong> <span data-i18n="case_1_goal">Защитить наследника рода Баскервилей.</span></p>` },
+  { old: `>УЛИКИ:</strong> Пропавший башмак, предупреждающее письмо, следы гигантской собаки.</p>`, new: ` data-i18n="case_1_clues_label">УЛИКИ:</strong> <span data-i18n="case_1_clues">Пропавший башмак, предупреждающее письмо, следы гигантской собаки.</span></p>` },
+  { old: `>ВЫВОД ХОЛМСА:</strong> Легенда использовалась как прикрытие для хладнокровного убийства из корыстных побуждений.</p>`, new: ` data-i18n="case_1_result_label">ВЫВОД ХОЛМСА:</strong> <span data-i18n="case_1_result">Легенда использовалась как прикрытие для хладнокровного убийства из корыстных побуждений.</span></p>` },
+  
+  { old: `>ГОЛУБОЙ КАРБУНКУЛ</h4>`, new: ` data-i18n="case_2_title">ГОЛУБОЙ КАРБУНКУЛ</h4>` },
+  { old: `>Исчезновение бесценного драгоценного камня.</p>`, new: ` data-i18n="case_2_desc">Исчезновение бесценного драгоценного камня.</p>` },
+  { old: `>ЗАДАЧА:</strong> Найти похищенный карбункул графини Моркар.</p>`, new: ` data-i18n="case_2_goal_label">ЗАДАЧА:</strong> <span data-i18n="case_2_goal">Найти похищенный карбункул графини Моркар.</span></p>` },
+  { old: `>УЛИКИ:</strong> Старая фетровая шляпа и рождественский гусь.</p>`, new: ` data-i18n="case_2_clues_label">УЛИКИ:</strong> <span data-i18n="case_2_clues">Старая фетровая шляпа и рождественский гусь.</span></p>` },
+  { old: `>ВЫВОД ХОЛМСА:</strong> Камень был спрятан там, где его никто не стал бы искать.</p>`, new: ` data-i18n="case_2_result_label">ВЫВОД ХОЛМСА:</strong> <span data-i18n="case_2_result">Камень был спрятан там, где его никто не стал бы искать.</span></p>` },
+  
+  { old: `>ПЕСТРАЯ ЛЕНТА</h4>`, new: ` data-i18n="case_3_title">ПЕСТРАЯ ЛЕНТА</h4>` },
+  { old: `>Загадочная смерть в закрытой комнате загородного дома.</p>`, new: ` data-i18n="case_3_desc">Загадочная смерть в закрытой комнате загородного дома.</p>` },
+  { old: `>ЗАДАЧА:</strong> Предотвратить убийство Элен Стоунер.</p>`, new: ` data-i18n="case_3_goal_label">ЗАДАЧА:</strong> <span data-i18n="case_3_goal">Предотвратить убийство Элен Стоунер.</span></p>` },
+  { old: `>УЛИКИ:</strong> Свист в ночи, металлическое лязганье, фальшивый звонок, вентилятор.</p>`, new: ` data-i18n="case_3_clues_label">УЛИКИ:</strong> <span data-i18n="case_3_clues">Свист в ночи, металлическое лязганье, фальшивый звонок, вентилятор.</span></p>` },
+  { old: `>ВЫВОД ХОЛМСА:</strong> Орудие убийства могло проникнуть туда, куда не мог человек.</p>`, new: ` data-i18n="case_3_result_label">ВЫВОД ХОЛМСА:</strong> <span data-i18n="case_3_result">Орудие убийства могло проникнуть туда, куда не мог человек.</span></p>` },
+  
+  { old: `"Часть из них он так и не разрешил опубликовать..." - Дж. В.`, new: `<span data-i18n="watson_archive">"Часть из них он так и не разрешил опубликовать..." - Дж. В.</span>` },
+  { old: `>РАСКРЫТО</div>`, new: ` data-i18n="solved">РАСКРЫТО</div>` },
+  
+  // Method
+  { old: `>МЕТОД ХОЛМСА</h3>`, new: ` data-i18n="method_title">МЕТОД ХОЛМСА</h3>` },
+  { old: `>НАБЛЮДЕНИЕ</div>`, new: ` data-i18n="method_1_title">НАБЛЮДЕНИЕ</div>` },
+  { old: `>Я вижу то, чего не замечают другие.</div>`, new: ` data-i18n="method_1_desc">Я вижу то, чего не замечают другие.</div>` },
+  { old: `>СБОР ФАКТОВ</div>`, new: ` data-i18n="method_2_title">СБОР ФАКТОВ</div>` },
+  { old: `>Каждая деталь имеет значение.</div>`, new: ` data-i18n="method_2_desc">Каждая деталь имеет значение.</div>` },
+  { old: `>АНАЛИЗ</div>`, new: ` data-i18n="method_3_title">АНАЛИЗ</div>` },
+  { old: `>Факты должны быть связаны между собой.</div>`, new: ` data-i18n="method_3_desc">Факты должны быть связаны между собой.</div>` },
+  { old: `>ДЕДУКЦИЯ</div>`, new: ` data-i18n="method_4_title">ДЕДУКЦИЯ</div>` },
+  { old: `Из множества деталей появляется единая картина.`, new: `<span data-i18n="method_4_desc">Из множества деталей появляется единая картина.</span>` },
+  { old: `>Иногда он делает это за секунду!</div>`, new: ` data-i18n="watson_method">Иногда он делает это за секунду!</div>` },
+  { old: `>РЕШЕНИЕ</div>`, new: ` data-i18n="method_5_title">РЕШЕНИЕ</div>` },
+  { old: `>Дело закрыто.</div>`, new: ` data-i18n="method_5_desc">Дело закрыто.</div>` },
+  
+  // Specializations
+  { old: `>СПЕЦИАЛИЗАЦИЯ</h3>`, new: ` data-i18n="spec_title">СПЕЦИАЛИЗАЦИЯ</h3>` },
+  { old: `>РОЗЫСК ПРОПАВШИХ</h4>`, new: ` data-i18n="spec_1_title">РОЗЫСК ПРОПАВШИХ</h4>` },
+  { old: `>Люди, документы, ценности.</p>`, new: ` data-i18n="spec_1_short">Люди, документы, ценности.</p>` },
+  { old: `>Если объект исчез, необходимо установить не только где он находится, но и почему исчез. Восстановление пути по едва заметным следам.</p>`, new: ` data-i18n="spec_1_full">Если объект исчез, необходимо установить не только где он находится, но и почему исчез. Восстановление пути по едва заметным следам.</p>` },
+  { old: `>РАССЛЕДОВАНИЕ ПРЕСТУПЛЕНИЙ</h4>`, new: ` data-i18n="spec_2_title">РАССЛЕДОВАНИЕ ПРЕСТУПЛЕНИЙ</h4>` },
+  { old: `>Восстановление последовательности событий.</p>`, new: ` data-i18n="spec_2_short">Восстановление последовательности событий.</p>` },
+  { old: `>Поиск мотивов и выявление противоречий. Место преступления — это текст, который нужно уметь прочитать, не упустив ни единой запятой.</p>`, new: ` data-i18n="spec_2_full">Поиск мотивов и выявление противоречий. Место преступления — это текст, который нужно уметь прочитать, не упустив ни единой запятой.</p>` },
+  { old: `>АНАЛИЗ УЛИК</h4>`, new: ` data-i18n="spec_3_title">АНАЛИЗ УЛИК</h4>` },
+  { old: `>Следы обуви, почерк, пепел.</p>`, new: ` data-i18n="spec_3_short">Следы обуви, почерк, пепел.</p>` },
+  { old: `>Ткань, запах, отпечатки и другие детали, которые часто остаются незамеченными полицией, но рассказывают целую историю о подозреваемом.</p>`, new: ` data-i18n="spec_3_full">Ткань, запах, отпечатки и другие детали, которые часто остаются незамеченными полицией, но рассказывают целую историю о подозреваемом.</p>` },
+  { old: `>РАЗОБЛАЧЕНИЕ ЛЖИ</h4>`, new: ` data-i18n="spec_4_title">РАЗОБЛАЧЕНИЕ ЛЖИ</h4>` },
+  { old: `>Несостыковки в показаниях.</p>`, new: ` data-i18n="spec_4_short">Несостыковки в показаниях.</p>` },
+  { old: `>Ложь требует усилий. Несостыковки зачастую говорят больше, чем сами показания. Я слушаю то, о чем люди умалчивают.</p>`, new: ` data-i18n="spec_4_full">Ложь требует усилий. Несостыковки зачастую говорят больше, чем сами показания. Я слушаю то, о чем люди умалчивают.</p>` },
+  { old: `"Самый странный сосед на моей памяти"`, new: `<span data-i18n="watson_spec">"Самый странный сосед на моей памяти"</span>` },
+  { old: `title="Не трогайте вещи Холмса..."`, new: `title="Не трогайте вещи Холмса..." data-i18n-title="hat_tooltip"` },
+  
+  // Beyond
+  { old: `>ВНЕ РАССЛЕДОВАНИЙ</h3>`, new: ` data-i18n="beyond_title">ВНЕ РАССЛЕДОВАНИЙ</h3>` },
+  { old: `>СКРИПКА</h4>`, new: ` data-i18n="hobby_1_title">СКРИПКА</h4>` },
+  { old: `>Музыка</p>`, new: ` data-i18n="hobby_1_sub">Музыка</p>` },
+  { old: `>Музыка помогает упорядочить мысли.</p>`, new: ` data-i18n="hobby_1_desc">Музыка помогает упорядочить мысли.</p>` },
+  { old: `>БОКС</h4>`, new: ` data-i18n="hobby_2_title">БОКС</h4>` },
+  { old: `>Дисциплина</p>`, new: ` data-i18n="hobby_2_sub">Дисциплина</p>` },
+  { old: `>Физическая подготовка и дисциплина ума.</p>`, new: ` data-i18n="hobby_2_desc">Физическая подготовка и дисциплина ума.</p>` },
+  { old: `>ХИМИЯ</h4>`, new: ` data-i18n="hobby_3_title">ХИМИЯ</h4>` },
+  { old: `>Эксперименты</p>`, new: ` data-i18n="hobby_3_sub">Эксперименты</p>` },
+  { old: `>Эксперименты и анализ веществ на столе.</p>`, new: ` data-i18n="hobby_3_desc">Эксперименты и анализ веществ на столе.</p>` },
+  { old: `>ТРУБКА</h4>`, new: ` data-i18n="hobby_4_title">ТРУБКА</h4>` },
+  { old: `>Размышления</p>`, new: ` data-i18n="hobby_4_sub">Размышления</p>` },
+  { old: `>Ритуал глубокого размышления над делом.</p>`, new: ` data-i18n="hobby_4_desc">Ритуал глубокого размышления над делом.</p>` },
+  { old: `>Иногда он терзает её всю ночь напролёт...</div>`, new: ` data-i18n="watson_violin">Иногда он терзает её всю ночь напролёт...</div>` },
+  { old: `>Вчера он опять стрелял в стену...</div>`, new: ` data-i18n="watson_shoot">Вчера он опять стрелял в стену...</div>` },
+  
+  // Testimonials
+  { old: `>ОТЗЫВЫ</h3>`, new: ` data-i18n="testimonials_title">ОТЗЫВЫ</h3>` },
+  { old: `>«Блестящий ум. Иногда невыносимый характер.»</p>`, new: ` data-i18n="t_1_quote">«Блестящий ум. Иногда невыносимый характер.»</p>` },
+  { old: `>— Д-р Джон Ватсон, выдержка из дневника</p>`, new: ` data-i18n="t_1_author">— Д-р Джон Ватсон, выдержка из дневника</p>` },
+  { old: `>«К сожалению, снова оказался прав. Его методы непостижимы.»</p>`, new: ` data-i18n="t_2_quote">«К сожалению, снова оказался прав. Его методы непостижимы.»</p>` },
+  { old: `>— Инспектор Лестрейд, Скотланд-Ярд</p>`, new: ` data-i18n="t_2_author">— Инспектор Лестрейд, Скотланд-Ярд</p>` },
+  { old: `>«Только пусть перестанет превращать гостиную в химическую лабораторию и стрелять в стену.»</p>`, new: ` data-i18n="t_3_quote">«Только пусть перестанет превращать гостиную в химическую лабораторию и стрелять в стену.»</p>` },
+  { old: `>— Миссис Хадсон</p>`, new: ` data-i18n="t_3_author">— Миссис Хадсон</p>` },
+  
+  // Current
+  { old: `>ТЕКУЩИЕ ДЕЛА</h3>`, new: ` data-i18n="current_title">ТЕКУЩИЕ ДЕЛА</h3>` },
+  { old: `>ДЕЛО #047</div>`, new: ` data-i18n="c_1_num">ДЕЛО #047</div>` },
+  { old: `>В ПРОЦЕССЕ</div>`, new: ` data-i18n="c_1_status">В ПРОЦЕССЕ</div>` },
+  { old: `>Исчезновение лондонского наследника.</div>`, new: ` data-i18n="c_1_desc">Исчезновение лондонского наследника.</div>` },
+  { old: `>ДЕЛО #048</div>`, new: ` data-i18n="c_2_num">ДЕЛО #048</div>` },
+  { old: `>НА АНАЛИЗЕ</div>`, new: ` data-i18n="c_2_status">НА АНАЛИЗЕ</div>` },
+  { old: `>Письмо без отправителя и криптограмма.</div>`, new: ` data-i18n="c_2_desc">Письмо без отправителя и криптограмма.</div>` },
+  { old: `>ДЕЛО #049</div>`, new: ` data-i18n="c_3_num">ДЕЛО #049</div>` },
+  { old: `>КОНФИДЕНЦИАЛЬНО</div>`, new: ` data-i18n="c_3_status">КОНФИДЕНЦИАЛЬНО</div>` },
+  { old: `>Человек, которого никто не видел.</div>`, new: ` data-i18n="c_3_desc">Человек, которого никто не видел.</div>` },
+  { old: `>Никакого отдыха...</div>`, new: ` data-i18n="watson_current">Никакого отдыха...</div>` },
+  
+  // Footer
+  { old: `>© 1895 SHERLOCK HOLMES КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</div>`, new: ` data-i18n="footer">© 1895 SHERLOCK HOLMES КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</div>` },
+  
+  // Modals
+  { old: `>ДОСЬЕ</h2>`, new: ` data-i18n="modal_about_title">ДОСЬЕ</h2>` },
+  { old: `>ШЕРЛОК ХОЛМС</h3>`, new: ` data-i18n="modal_about_name">ШЕРЛОК ХОЛМС</h3>` },
+  { old: `>Профессия: Консультирующий детектив</p>`, new: ` data-i18n="modal_about_prof">Профессия: Консультирующий детектив</p>` },
+  { old: `>Адрес: Бейкер-стрит, 221Б, Лондон</p>`, new: ` data-i18n="modal_about_address">Адрес: Бейкер-стрит, 221Б, Лондон</p>` },
+  { old: `>Я не служу в полиции. Я — последняя инстанция, к которой обращаются, когда все остальные зашли в тупик. Я создал свою профессию сам.</p>`, new: ` data-i18n="modal_about_bio">Я не служу в полиции. Я — последняя инстанция, к которой обращаются, когда все остальные зашли в тупик. Я создал свою профессию сам.</p>` },
+  { old: `>Навыки: Дедукция, химия, скрипка, бокс, знание всех видов лондонской грязи.</p>`, new: ` data-i18n="modal_about_skills">Навыки: Дедукция, химия, скрипка, бокс, знание всех видов лондонской грязи.</p>` },
+  { old: `>ЗАКРЫТЬ</button>`, new: ` data-i18n="modal_close">ЗАКРЫТЬ</button>` },
+  
+  { old: `>СВЯЗАТЬСЯ</h2>`, new: ` data-i18n="modal_contact_title">СВЯЗАТЬСЯ</h2>` },
+  { old: `>Опишите ваше дело. Если оно покажется мне достаточно интересным, я примусь за него.</p>`, new: ` data-i18n="modal_contact_desc">Опишите ваше дело. Если оно покажется мне достаточно интересным, я примусь за него.</p>` },
+  { old: `>ВАШЕ ИМЯ</label>`, new: ` data-i18n="form_name">ВАШЕ ИМЯ</label>` },
+  { old: `>СУТЬ ДЕЛА</label>`, new: ` data-i18n="form_desc">СУТЬ ДЕЛА</label>` },
+  { old: `>ОТПРАВИТЬ С ТЕЛЕГРАФОМ</button>`, new: ` data-i18n="form_submit">ОТПРАВИТЬ С ТЕЛЕГРАФОМ</button>` },
+  { old: `>Телеграмма отправлена. Я свяжусь с вами, если дело того стоит.</p>`, new: ` data-i18n="form_success">Телеграмма отправлена. Я свяжусь с вами, если дело того стоит.</p>` },
+  { old: `<div class="stamp">КОНФИДЕНЦИАЛЬНО</div>`, new: `<div class="stamp" data-i18n="stamp_confidential">КОНФИДЕНЦИАЛЬНО</div>` },
+  { old: `placeholder="Запись для архива..."`, new: `placeholder="Запись для архива..." data-i18n-ph="ph_name"` },
+  { old: `placeholder="Суть проблемы..."`, new: `placeholder="Суть проблемы..." data-i18n-ph="ph_desc"` }
+];
+
+let errorFound = false;
+replacements.forEach(r => {
+  if (content.includes(r.old)) {
+    content = content.replace(new RegExp(r.old.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'g'), r.new);
+  } else {
+    console.warn("NOT FOUND: ", r.old);
+    errorFound = true;
+  }
+});
+
+const scriptPart = '<script>\\n' +
+'const translations = ' + JSON.stringify(dictObj, null, 2) + ';\\n' +
+'\\n' +
+'function setLang(lang) {\\n' +
+'  localStorage.setItem(\\'sherlock_lang\\', lang);\\n' +
+'  \\n' +
+'  // Update buttons\\n' +
+'  document.querySelectorAll(\\'[data-lang-btn]\\').forEach(btn => {\\n' +
+'    if (btn.getAttribute(\\'data-lang-btn\\') === lang) {\\n' +
+'      btn.classList.add(\\'text-white\\', \\'font-bold\\');\\n' +
+'      btn.classList.remove(\\'text-sherlock-gold-dark\\');\\n' +
+'    } else {\\n' +
+'      btn.classList.remove(\\'text-white\\', \\'font-bold\\');\\n' +
+'      btn.classList.add(\\'text-sherlock-gold-dark\\');\\n' +
+'    }\\n' +
+'  });\\n' +
+'\\n' +
+'  // Update texts\\n' +
+'  const dict = translations[lang];\\n' +
+'  if(!dict) return;\\n' +
+'  document.querySelectorAll(\\'[data-i18n]\\').forEach(el => {\\n' +
+'    const key = el.getAttribute(\\'data-i18n\\');\\n' +
+'    if (dict[key]) {\\n' +
+'      el.innerHTML = dict[key];\\n' +
+'    }\\n' +
+'  });\\n' +
+'  \\n' +
+'  document.querySelectorAll(\\'[data-i18n-ph]\\').forEach(el => {\\n' +
+'    const key = el.getAttribute(\\'data-i18n-ph\\');\\n' +
+'    if (dict[key]) {\\n' +
+'      el.placeholder = dict[key];\\n' +
+'    }\\n' +
+'  });\\n' +
+'\\n' +
+'  document.querySelectorAll(\\'[data-i18n-title]\\').forEach(el => {\\n' +
+'    const key = el.getAttribute(\\'data-i18n-title\\');\\n' +
+'    if (dict[key]) {\\n' +
+'      el.title = dict[key];\\n' +
+'    }\\n' +
+'  });\\n' +
+'}\\n' +
+'\\n' +
+'document.addEventListener(\\'DOMContentLoaded\\', () => {\\n' +
+'  const savedLang = localStorage.getItem(\\'sherlock_lang\\') || \\'ru\\';\\n' +
+'  setLang(savedLang);\\n' +
+'});\\n' +
+'</script>';
+
+content = content.replace('</body>', scriptPart + '\\n</body>');
+
+if (!errorFound) {
+  fs.writeFileSync(filepath, content, 'utf-8');
+  console.log("i18n applied correctly via JS regex");
+} else {
+  console.log("ERRORS FOUND - NO WRITE");
+}
