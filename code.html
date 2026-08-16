@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+
+<html lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sherlock Holmes - Consulting Detective</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;family=Caveat:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'sherlock-dark': '#0c0a08',
+          'sherlock-gold': '#c5a059',
+          'sherlock-gold-light': '#e6cc98',
+          'sherlock-gold-dark': '#8e7954',
+          'sherlock-border': '#3a3124',
+          'sherlock-green': '#2e4d3a',
+        },
+        fontFamily: {
+          cinzel: ['Cinzel', 'serif'],
+          cormorant: ['Cormorant Garamond', 'serif'],
+        },
+        backgroundImage: {
+          'hero-bg': "url('hero-bg.png')", // Dark vintage room or library
+          'texture': "url('https://www.transparenttextures.com/patterns/old-paper.png')"
+        }
+      }
+    }
+  }
+</script>
+<style>
+    /* Custom Cursor */
+    body {
+      background-color: #0c0a08;
+      color: #c5a059;
+      font-family: 'Cormorant Garamond', serif;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23c5a059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') 10 10, auto;
+    }
+    
+    .decorative-border {
+      border: 1px solid #3a3124;
+      position: relative;
+    }
+    
+    .decorative-border::before,
+    .decorative-border::after,
+    .decorative-border-inner::before,
+    .decorative-border-inner::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #8e7954;
+      border-radius: 50%;
+    }
+    
+    .decorative-border::before { top: -6px; left: -6px; }
+    .decorative-border::after { top: -6px; right: -6px; }
+    .decorative-border-inner::before { bottom: -6px; left: -6px; }
+    .decorative-border-inner::after { bottom: -6px; right: -6px; }
+
+    .ornament-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .ornament-line::before,
+    .ornament-line::after {
+      content: '';
+      height: 1px;
+      background: linear-gradient(to right, transparent, #8e7954, transparent);
+      flex: 1;
+    }
+    .ornament-diamond {
+      width: 6px;
+      height: 6px;
+      background-color: #8e7954;
+      transform: rotate(45deg);
+    }
+
+    input, textarea {
+      background-color: transparent;
+      border: 1px solid #3a3124;
+      color: #c5a059;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #8e7954;
+      box-shadow: 0 0 0 1px #8e7954;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #8e7954;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    /* Card Highlighting & Uniform Bright Text */
+    .interactive-card, .method-step {
+      background-color: #14110d !important;
+      border: 1px solid rgba(197, 160, 89, 0.15) !important;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+      border-radius: 3px;
+    }
+    .interactive-card:hover, .method-step:hover {
+      background-color: #1a1611 !important;
+      border-color: rgba(197, 160, 89, 0.4) !important;
+      box-shadow: 0 8px 30px rgba(197, 160, 89, 0.15);
+      transform: translateY(-3px);
+    }
+    
+    /* Make all text in cards bright gold */
+    .interactive-card .text-sherlock-gold-dark,
+    .interactive-card .text-sherlock-gold,
+    .method-step .text-sherlock-gold-dark,
+    .method-step .text-sherlock-gold {
+      color: #e5cc98 !important; /* sherlock-gold-light */
+    }
+    .interactive-card .border-sherlock-gold-dark {
+      border-color: #e5cc98 !important;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0c0a08;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3a3124;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8e7954;
+    }
+    
+    /* Candle Flicker Effect */
+    @keyframes flicker {
+      0%, 100% { 
+        text-shadow: 0 0 10px rgba(197,160,89, 0.4), 0 0 20px rgba(197,160,89, 0.2); 
+        opacity: 1;
+      }
+      30% { opacity: 0.95; }
+      50% { 
+        text-shadow: 0 0 15px rgba(197,160,89, 0.7), 0 0 30px rgba(197,160,89, 0.4); 
+        opacity: 0.9;
+      }
+      70% { opacity: 1; }
+    }
+    .candle-flicker {
+      animation: flicker 5s infinite alternate;
+    }
+    
+    /* Watson Notes */
+    .watson-note {
+      font-family: 'Caveat', cursive;
+      color: #8c2323; /* Red ink */
+      font-size: 1.5rem;
+      transform: rotate(-3deg);
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Animations for Dossier Overlay */
+    @keyframes unfold {
+      0% { transform: scaleY(0.01) scaleX(0); opacity: 0; }
+      50% { transform: scaleY(0.01) scaleX(1); opacity: 1; }
+      100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+    }
+    
+    @keyframes fold {
+      0% { transform: scaleY(1) scaleX(1); opacity: 1; }
+      50% { transform: scaleY(0.01) scaleX(1); opacity: 1; }
+      100% { transform: scaleY(0.01) scaleX(0); opacity: 0; }
+    }
+
+    .dossier-open {
+      animation: unfold 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .dossier-close {
+      animation: fold 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .dossier-overlay {
+      display: none !important;
+    }
+    .dossier-overlay.active {
+      display: flex !important;
+    }
+
+    .paper-texture {
+      background-color: #f4ebd8;
+      background-image: url('https://www.transparenttextures.com/patterns/old-paper.png');
+      color: #000000 !important;
+      box-shadow: inset 0 0 100px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.8);
+    }
+    
+    /* Enforce pure black on all text elements inside modals unless overridden by hover */
+    .paper-texture p, .paper-texture h2, .paper-texture h3, .paper-texture h4, .paper-texture span, .paper-texture li, .paper-texture div {
+      color: #000000;
+    }
+
+    .stamp {
+      border: 4px solid #8c2323;
+      color: #8c2323;
+      padding: 4px 12px;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      transform: rotate(-10deg);
+      display: inline-block;
+      opacity: 0.8;
+      border-radius: 2px;
+    }
+    
+    .interactive-card {
+      transition: all 0.5s ease;
+      cursor: pointer;
+    }
+    .interactive-card:hover {
+      background-color: rgba(142, 121, 84, 0.1);
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+<body class="bg-sherlock-dark text-sherlock-gold-light font-cormorant min-h-screen selection:bg-sherlock-gold selection:text-black antialiased relative overflow-x-hidden">
+
+<!-- BEGIN: MainHeader -->
+<header class="absolute top-0 left-0 w-full z-40 p-6 flex justify-between items-start font-cinzel text-sm tracking-wider">
+<div class="text-sherlock-gold-dark text-xs text-center leading-tight">
+<span class="block text-lg text-sherlock-gold">221<span class="text-sm">Б</span></span>
+      БЕЙКЕР-СТРИТ<br/>
+      ЛОНДОН
+    </div>
+<nav class="hidden md:flex space-x-8 mt-2">
+<a class="hover:text-white transition-colors duration-300 cursor-pointer" onclick="openModal('about-modal')">ОБО МНЕ</a>
+<a class="hover:text-white transition-colors duration-300 cursor-pointer" href="#cases">ДЕЛА</a>
+<a class="hover:text-white transition-colors duration-300 cursor-pointer" href="#method">МОЙ МЕТОД</a>
+<a class="hover:text-white transition-colors duration-300 cursor-pointer" href="#specializations">ЧЕМ Я ЗАНИМАЮСЬ</a>
+<a class="hover:text-white transition-colors duration-300 cursor-pointer" onclick="openModal('contact-modal')">КОНТАКТЫ</a>
+</nav>
+<div class="text-right text-xs mt-2">
+<span class="text-sherlock-gold-dark">СТАТУС ДЕЛА:</span><br/>
+<span class="text-sherlock-green tracking-widest">ДОСТУПЕН</span>
+</div>
+</header>
+<!-- END: MainHeader -->
+
+<main class="flex-grow">
+<!-- BEGIN: Hero Section -->
+<section class="relative min-h-screen flex items-center justify-center bg-hero-bg bg-cover bg-center bg-no-repeat pt-20" id="hero">
+<div class="absolute inset-0 bg-gradient-to-b from-sherlock-dark/80 via-transparent to-sherlock-dark/95"></div>
+<div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-[-10vh]">
+<h1 class="font-cinzel text-6xl md:text-8xl lg:text-9xl text-sherlock-gold-light font-bold tracking-tight mb-2 candle-flicker" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.9);">
+          SHERLOCK<br/>HOLMES
+        </h1>
+<h2 class="font-cinzel text-xl md:text-2xl text-sherlock-gold-light tracking-[0.3em] mb-6 drop-shadow-lg candle-flicker">
+          КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ
+        </h2>
+<div class="flex items-center justify-center gap-4 mb-6 w-64 mx-auto ">
+<div class="h-[1px] bg-sherlock-gold-dark flex-1"></div>
+<div class="ornament-diamond"></div>
+<div class="h-[1px] bg-sherlock-gold-dark flex-1"></div>
+</div>
+<p class="font-cormorant text-2xl md:text-3xl italic text-sherlock-gold-light mb-12 drop-shadow-md">
+          Когда полиция заходит в тупик —<br/>я начинаю расследование.
+        </p>
+<div class="flex flex-col sm:flex-row justify-center gap-6">
+<button class="font-cinzel border border-sherlock-gold py-3 px-8 text-sm tracking-widest text-sherlock-gold hover:bg-sherlock-gold/10 hover:text-white hover:shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all duration-500" onclick="openModal('submit-case-modal')">
+            ПЕРЕДАТЬ ДЕЛО
+          </button>
+<button class="font-cinzel border border-sherlock-gold py-3 px-8 text-sm tracking-widest text-sherlock-gold hover:bg-sherlock-gold/10 hover:text-white hover:shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all duration-500" onclick="openModal('about-modal')">
+            ОБО МНЕ
+          </button>
+</div>
+</div>
+<!-- Scroll Down Indicator -->
+<div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-60">
+<div class="w-8 h-8 rounded-full border border-sherlock-border flex items-center justify-center mb-2">
+  <span class="text-xs">v</span>
+</div>
+</div>
+</section>
+<!-- END: Hero Section -->
+
+<!-- BEGIN: CASE FILES Section -->
+<section id="cases" class="bg-sherlock-dark py-24 px-4 md:px-8 relative border-t border-sherlock-border/30 overflow-hidden">
+  <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/old-paper.png'); mix-blend-screen;"></div>
+  <img src="compass.png" class="absolute -right-10 top-20 w-72 opacity-90 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(-15deg); filter: sepia(0.5) contrast(1.2); z-index: 0;">
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="watson-note absolute -top-8 left-10 md:left-24 text-xl">"Часть из них он так и не разрешил опубликовать..." - Дж. В.</div>
+    <div class="ornament-line mb-12">
+      <h3 class="font-cinzel text-4xl px-4 text-sherlock-gold-light tracking-widest candle-flicker">АРХИВ ДЕЛ</h3>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+      
+      <!-- Case 1 -->
+      <div class="decorative-border bg-[#0f0c08] p-1 cursor-pointer interactive-card" onclick="toggleCase(this)">
+        <div class="decorative-border-inner p-8 h-full flex flex-col relative overflow-hidden">
+          <div class="text-xs font-cinzel text-sherlock-gold-dark mb-4 border-b border-sherlock-border pb-2">ДЕЛО #001</div>
+          <h4 class="font-cinzel text-xl text-sherlock-gold-light mb-4">СОБАКА БАСКЕРВИЛЕЙ</h4>
+          <p class="font-cormorant italic text-sherlock-gold mb-6 min-h-[60px]">Семейная тайна, необъяснимые события, подозрительная смерть.</p>
+          <div class="stamp absolute bottom-4 right-4 text-xs ">РАСКРЫТО</div>
+          
+          <div class="case-details hidden mt-6 border-t border-sherlock-border/50 pt-4 font-cormorant text-sherlock-gold-light ">
+            <p><strong class="font-cinzel text-sherlock-gold-dark text-sm">ЗАДАЧА:</strong> Защитить наследника рода Баскервилей.</p>
+            <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">УЛИКИ:</strong> Пропавший башмак, предупреждающее письмо, следы гигантской собаки.</p>
+            <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">ВЫВОД ХОЛМСА:</strong> Легенда использовалась как прикрытие для хладнокровного убийства из корыстных побуждений.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 2 -->
+      <div class="decorative-border bg-[#0f0c08] p-1 cursor-pointer interactive-card" onclick="toggleCase(this)">
+        <div class="decorative-border-inner p-8 h-full flex flex-col relative overflow-hidden">
+          <div class="text-xs font-cinzel text-sherlock-gold-dark mb-4 border-b border-sherlock-border pb-2">ДЕЛО #002</div>
+          <h4 class="font-cinzel text-xl text-sherlock-gold-light mb-4">ГОЛУБОЙ КАРБУНКУЛ</h4>
+          <p class="font-cormorant italic text-sherlock-gold mb-6 min-h-[60px]">Исчезновение бесценного драгоценного камня.</p>
+          <div class="stamp absolute bottom-4 right-4 text-xs ">РАСКРЫТО</div>
+
+          <div class="case-details hidden mt-6 border-t border-sherlock-border/50 pt-4 font-cormorant text-sherlock-gold-light ">
+             <p><strong class="font-cinzel text-sherlock-gold-dark text-sm">ЗАДАЧА:</strong> Найти похищенный карбункул графини Моркар.</p>
+             <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">УЛИКИ:</strong> Старая фетровая шляпа и рождественский гусь.</p>
+             <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">ВЫВОД ХОЛМСА:</strong> Камень был спрятан там, где его никто не стал бы искать.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 3 -->
+      <div class="decorative-border bg-[#0f0c08] p-1 cursor-pointer interactive-card" onclick="toggleCase(this)">
+        <div class="decorative-border-inner p-8 h-full flex flex-col relative overflow-hidden">
+          <div class="text-xs font-cinzel text-sherlock-gold-dark mb-4 border-b border-sherlock-border pb-2">ДЕЛО #003</div>
+          <h4 class="font-cinzel text-xl text-sherlock-gold-light mb-4">ПЕСТРАЯ ЛЕНТА</h4>
+          <p class="font-cormorant italic text-sherlock-gold mb-6 min-h-[60px]">Загадочная смерть в закрытой комнате загородного дома.</p>
+          <div class="stamp absolute bottom-4 right-4 text-xs ">РАСКРЫТО</div>
+
+          <div class="case-details hidden mt-6 border-t border-sherlock-border/50 pt-4 font-cormorant text-sherlock-gold-light ">
+            <p><strong class="font-cinzel text-sherlock-gold-dark text-sm">ЗАДАЧА:</strong> Предотвратить убийство Элен Стоунер.</p>
+            <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">УЛИКИ:</strong> Свист в ночи, металлическое лязганье, фальшивый звонок, вентилятор.</p>
+            <p class="mt-2"><strong class="font-cinzel text-sherlock-gold-dark text-sm">ВЫВОД ХОЛМСА:</strong> Орудие убийства могло проникнуть туда, куда не мог человек.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- END: CASE FILES Section -->
+
+<!-- BEGIN: THE HOLMES METHOD Section -->
+<section id="method" class="bg-[#0f0c08] py-24 px-4 md:px-8 border-t border-sherlock-border/30 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png'); mix-blend-screen;"></div>
+  <img src="pipe.png" class="absolute -left-4 top-12 w-80 opacity-90 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(25deg); filter: sepia(0.5) contrast(1.2); z-index: 0; -webkit-mask-image: radial-gradient(ellipse at center, black 55%, transparent 75%); mask-image: radial-gradient(ellipse at center, black 55%, transparent 75%);">
+  <div class="max-w-5xl mx-auto relative z-10">
+    <div class="ornament-line mb-16">
+      <h3 class="font-cinzel text-4xl px-4 text-sherlock-gold-light tracking-widest text-center candle-flicker">МЕТОД ХОЛМСА</h3>
+    </div>
+    
+    <div class="flex flex-col md:flex-row justify-between items-center md:items-stretch gap-4 relative">
+      <!-- Line connecting steps (desktop) -->
+      <div class="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-sherlock-border -translate-y-1/2 z-0"></div>
+
+      <!-- Step 1 -->
+      <div class="method-step relative z-10 w-full md:w-1/5 text-center group cursor-pointer bg-[#0f0c08] py-4" onclick="toggleMethod(this)">
+        <div class="font-cinzel text-xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">НАБЛЮДЕНИЕ</div>
+        <div class="w-3 h-3 bg-sherlock-gold-dark mx-auto transform rotate-45 mb-4 group-hover:bg-sherlock-gold transition-colors"></div>
+        <div class="method-desc h-0 overflow-hidden opacity-0 transition-all duration-500 font-cormorant italic text-sherlock-gold-dark text-lg px-2">Я вижу то, чего не замечают другие.</div>
+      </div>
+      <!-- Step 2 -->
+      <div class="method-step relative z-10 w-full md:w-1/5 text-center group cursor-pointer bg-[#0f0c08] py-4" onclick="toggleMethod(this)">
+        <div class="font-cinzel text-xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">СБОР ФАКТОВ</div>
+        <div class="w-3 h-3 bg-sherlock-gold-dark mx-auto transform rotate-45 mb-4 group-hover:bg-sherlock-gold transition-colors"></div>
+        <div class="method-desc h-0 overflow-hidden opacity-0 transition-all duration-500 font-cormorant italic text-sherlock-gold-dark text-lg px-2">Каждая деталь имеет значение.</div>
+      </div>
+      <!-- Step 3 -->
+      <div class="method-step relative z-10 w-full md:w-1/5 text-center group cursor-pointer bg-[#0f0c08] py-4" onclick="toggleMethod(this)">
+        <div class="font-cinzel text-xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">АНАЛИЗ</div>
+        <div class="w-3 h-3 bg-sherlock-gold-dark mx-auto transform rotate-45 mb-4 group-hover:bg-sherlock-gold transition-colors"></div>
+        <div class="method-desc h-0 overflow-hidden opacity-0 transition-all duration-500 font-cormorant italic text-sherlock-gold-dark text-lg px-2">Факты должны быть связаны между собой.</div>
+      </div>
+      <!-- Step 4 -->
+      <div class="method-step relative z-10 w-full md:w-1/5 text-center group cursor-pointer bg-[#0f0c08] py-4" onclick="toggleMethod(this)">
+        <div class="font-cinzel text-xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">ДЕДУКЦИЯ</div>
+        <div class="w-3 h-3 bg-sherlock-gold-dark mx-auto transform rotate-45 mb-4 group-hover:bg-sherlock-gold transition-colors"></div>
+        <div class="method-desc h-0 overflow-hidden opacity-0 transition-all duration-500 font-cormorant italic text-sherlock-gold-dark text-lg px-2 relative">
+          Из множества деталей появляется единая картина.
+          <div class="watson-note absolute top-6 -right-10 text-lg hidden md:block" style="transform: rotate(10deg);">Иногда он делает это за секунду!</div>
+        </div>
+      </div>
+      <!-- Step 5 -->
+      <div class="method-step relative z-10 w-full md:w-1/5 text-center group cursor-pointer bg-[#0f0c08] py-4" onclick="toggleMethod(this)">
+        <div class="font-cinzel text-xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">РЕШЕНИЕ</div>
+        <div class="w-3 h-3 bg-sherlock-gold-dark mx-auto transform rotate-45 mb-4 group-hover:bg-sherlock-gold transition-colors"></div>
+        <div class="method-desc h-0 overflow-hidden opacity-0 transition-all duration-500 font-cormorant italic text-sherlock-gold-dark text-lg px-2">Дело закрыто.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- END: THE HOLMES METHOD Section -->
+
+<!-- BEGIN: SPECIALIZATIONS Section -->
+<section id="specializations" class="bg-sherlock-dark py-24 px-4 md:px-8 border-t border-sherlock-border/30 relative overflow-hidden">
+  <img src="hat.png" class="absolute -right-10 top-12 w-96 opacity-80 mix-blend-screen cursor-pointer hidden md:block" alt="Hat" style="transform: rotate(-10deg); filter: sepia(0.5) contrast(1.2); z-index: 20;" onclick="releaseLadybug(event, this)" title="Не трогайте вещи Холмса...">
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="watson-note absolute top-20 right-4 md:right-32 text-xl" style="transform: rotate(5deg);">"Самый странный сосед на моей памяти"</div>
+    <div class="ornament-line mb-16">
+      <h3 class="font-cinzel text-4xl px-4 text-sherlock-gold-light tracking-widest text-center candle-flicker">СПЕЦИАЛИЗАЦИЯ</h3>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <div class="border-l border-sherlock-border pl-6 py-2 cursor-pointer interactive-card group" onclick="toggleSpec(this)">
+        <h4 class="font-cinzel text-2xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">РОЗЫСК ПРОПАВШИХ</h4>
+        <p class="font-cormorant text-xl text-sherlock-gold-dark  spec-short">Люди, документы, ценности.</p>
+        <p class="font-cormorant text-lg text-sherlock-gold-light mt-4 hidden spec-full">Если объект исчез, необходимо установить не только где он находится, но и почему исчез. Восстановление пути по едва заметным следам.</p>
+      </div>
+
+      <div class="border-l border-sherlock-border pl-6 py-2 cursor-pointer interactive-card group" onclick="toggleSpec(this)">
+        <h4 class="font-cinzel text-2xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">РАССЛЕДОВАНИЕ ПРЕСТУПЛЕНИЙ</h4>
+        <p class="font-cormorant text-xl text-sherlock-gold-dark  spec-short">Восстановление последовательности событий.</p>
+        <p class="font-cormorant text-lg text-sherlock-gold-light mt-4 hidden spec-full">Поиск мотивов и выявление противоречий. Место преступления — это текст, который нужно уметь прочитать, не упустив ни единой запятой.</p>
+      </div>
+
+      <div class="border-l border-sherlock-border pl-6 py-2 cursor-pointer interactive-card group" onclick="toggleSpec(this)">
+        <h4 class="font-cinzel text-2xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">АНАЛИЗ УЛИК</h4>
+        <p class="font-cormorant text-xl text-sherlock-gold-dark  spec-short">Следы обуви, почерк, пепел.</p>
+        <p class="font-cormorant text-lg text-sherlock-gold-light mt-4 hidden spec-full">Ткань, запах, отпечатки и другие детали, которые часто остаются незамеченными полицией, но рассказывают целую историю о подозреваемом.</p>
+      </div>
+
+      <div class="border-l border-sherlock-border pl-6 py-2 cursor-pointer interactive-card group" onclick="toggleSpec(this)">
+        <h4 class="font-cinzel text-2xl text-sherlock-gold-light mb-2 transition-colors group-hover:text-white">РАЗОБЛАЧЕНИЕ ЛЖИ</h4>
+        <p class="font-cormorant text-xl text-sherlock-gold-dark  spec-short">Несостыковки в показаниях.</p>
+        <p class="font-cormorant text-lg text-sherlock-gold-light mt-4 hidden spec-full">Ложь требует усилий. Несостыковки зачастую говорят больше, чем сами показания. Я слушаю то, о чем люди умалчивают.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- END: SPECIALIZATIONS Section -->
+
+<!-- BEGIN: BEYOND THE CASES Section -->
+<section id="beyond" class="bg-[#0f0c08] py-24 px-4 md:px-8 border-t border-sherlock-border/30 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/old-paper.png'); mix-blend-screen;"></div>
+  <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(45deg, #c5a059 0, #c5a059 1px, transparent 0, transparent 50%); background-size: 10px 10px;"></div>
+  
+  <!-- Atmosphere Items -->
+  <img src="books_clutter.png" class="absolute -left-32 top-10 w-96 opacity-60 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(5deg); filter: sepia(0.6) contrast(1.2); z-index: 0;">
+  <img src="pocket_watch.png" class="absolute -right-24 bottom-10 w-80 opacity-70 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(-15deg); filter: sepia(0.5) contrast(1.2); z-index: 0;">
+
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="watson-note absolute top-20 left-10 text-xl hidden lg:block" style="transform: rotate(-5deg); z-index: 20;">Иногда он терзает её всю ночь напролёт...</div>
+    <div class="ornament-line mb-16">
+      <h3 class="font-cinzel text-4xl px-4 text-sherlock-gold-light tracking-widest text-center candle-flicker">ВНЕ РАССЛЕДОВАНИЙ</h3>
+    </div>
+    
+    <div class="flex flex-wrap justify-center gap-6 items-start relative z-10">
+      <div class="border border-sherlock-border/50 p-6 text-center cursor-pointer interactive-card w-48 relative overflow-hidden group" onclick="toggleHobby(this)">
+        <img src="violin_icon.png" class="w-20 h-20 mx-auto mb-4 mix-blend-screen opacity-80 group-hover:opacity-100 transition-opacity" style="filter: sepia(0.8) saturate(1.5) contrast(1.2);" alt="Violin">
+        <div class="font-cinzel text-xl text-sherlock-gold-dark mb-2">СКРИПКА</div>
+        <div class="font-cormorant text-sm italic text-sherlock-gold ">Музыка</div>
+        <div class="hobby-desc hidden mt-4 pt-4 border-t border-sherlock-border/30 font-cormorant text-sherlock-gold-light text-base">Музыка помогает упорядочить мысли.</div>
+      </div>
+      
+      <div class="border border-sherlock-border/50 p-6 text-center cursor-pointer interactive-card w-48 relative overflow-hidden group" onclick="toggleHobby(this)">
+        <img src="boxing_icon.png" class="w-20 h-20 mx-auto mb-4 mix-blend-screen opacity-80 group-hover:opacity-100 transition-opacity" style="filter: sepia(0.8) saturate(1.5) contrast(1.2);" alt="Boxing">
+        <div class="font-cinzel text-xl text-sherlock-gold-dark mb-2">БОКС</div>
+        <div class="font-cormorant text-sm italic text-sherlock-gold ">Дисциплина</div>
+        <div class="hobby-desc hidden mt-4 pt-4 border-t border-sherlock-border/30 font-cormorant text-sherlock-gold-light text-base">Физическая подготовка и дисциплина ума.</div>
+      </div>
+
+      <div class="border border-sherlock-border/50 p-6 text-center cursor-pointer interactive-card w-48 relative overflow-hidden group" onclick="toggleHobby(this)">
+        <img src="chemistry_icon.png" class="w-20 h-20 mx-auto mb-4 mix-blend-screen opacity-80 group-hover:opacity-100 transition-opacity" style="filter: sepia(0.8) saturate(1.5) contrast(1.2);" alt="Chemistry">
+        <div class="font-cinzel text-xl text-sherlock-gold-dark mb-2">ХИМИЯ</div>
+        <div class="font-cormorant text-sm italic text-sherlock-gold ">Эксперименты</div>
+        <div class="hobby-desc hidden mt-4 pt-4 border-t border-sherlock-border/30 font-cormorant text-sherlock-gold-light text-base">Эксперименты и анализ веществ на столе.</div>
+      </div>
+
+      <div class="border border-sherlock-border/50 p-6 text-center cursor-pointer interactive-card w-48 relative overflow-hidden group" onclick="toggleHobby(this)">
+        <img src="pipe_icon.png" class="w-20 h-20 mx-auto mb-4 mix-blend-screen opacity-80 group-hover:opacity-100 transition-opacity" style="filter: sepia(0.8) saturate(1.5) contrast(1.2);" alt="Pipe">
+        <div class="font-cinzel text-xl text-sherlock-gold-dark mb-2">ТРУБКА</div>
+        <div class="font-cormorant text-sm italic text-sherlock-gold ">Размышления</div>
+        <div class="hobby-desc hidden mt-4 pt-4 border-t border-sherlock-border/30 font-cormorant text-sherlock-gold-light text-base">Ритуал глубокого размышления над делом.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- END: BEYOND THE CASES Section -->
+
+<!-- BEGIN: TESTIMONIALS & CURRENT CASES Section -->
+<section class="bg-sherlock-dark py-24 px-4 md:px-8 border-t border-sherlock-border/30 relative overflow-hidden">
+  
+  <!-- Atmosphere Items -->
+  <img src="newspaper_clipping.png" class="absolute -left-10 bottom-20 w-80 opacity-40 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(20deg); filter: sepia(0.7) contrast(1.1); z-index: 0;">
+  <img src="train_ticket.png" class="absolute right-10 bottom-4 w-64 opacity-50 mix-blend-screen pointer-events-none hidden md:block" alt="" style="transform: rotate(-10deg); filter: sepia(0.5) contrast(1.2); z-index: 0;">
+  <div class="watson-note absolute bottom-24 right-4 text-lg hidden md:block" style="transform: rotate(10deg); z-index: 20;">Вчера он опять стрелял в стену...</div>
+
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10">
+    
+    <!-- TESTIMONIALS -->
+    <div>
+      <div class="ornament-line mb-10">
+        <h3 class="font-cinzel text-3xl px-4 text-sherlock-gold-light tracking-widest text-center candle-flicker">ОТЗЫВЫ</h3>
+      </div>
+      <div class="space-y-8">
+        <blockquote class="border-l-2 border-sherlock-gold-dark pl-6 relative">
+          <p class="font-cormorant text-xl italic text-sherlock-gold  mb-2">«Блестящий ум. Иногда невыносимый характер.»</p>
+          <footer class="font-cinzel text-sm text-sherlock-gold-dark">— Д-р Джон Ватсон, выдержка из дневника</footer>
+        </blockquote>
+        <blockquote class="border-l-2 border-sherlock-gold-dark pl-6 relative">
+          <p class="font-cormorant text-xl italic text-sherlock-gold  mb-2">«К сожалению, снова оказался прав. Его методы непостижимы.»</p>
+          <footer class="font-cinzel text-sm text-sherlock-gold-dark">— Инспектор Лестрейд, Скотланд-Ярд</footer>
+        </blockquote>
+        <blockquote class="border-l-2 border-sherlock-gold-dark pl-6 relative">
+          <p class="font-cormorant text-xl italic text-sherlock-gold  mb-2">«Только пусть перестанет превращать гостиную в химическую лабораторию и стрелять в стену.»</p>
+          <footer class="font-cinzel text-sm text-sherlock-gold-dark">— Миссис Хадсон</footer>
+        </blockquote>
+      </div>
+    </div>
+
+    <!-- CURRENT CASES -->
+    <div>
+      <div class="ornament-line mb-10">
+        <h3 class="font-cinzel text-3xl px-4 text-sherlock-gold-light tracking-widest text-center candle-flicker">ТЕКУЩИЕ ДЕЛА</h3>
+      </div>
+      <div class="space-y-6 relative">
+        <div class="watson-note absolute top-20 -left-10 text-xl hidden md:block" style="transform: rotate(-15deg);">Никакого отдыха...</div>
+        <div class="border border-dashed border-sherlock-border p-4 relative interactive-card" onclick="openModal('submit-case-modal')">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-cinzel text-sherlock-gold-light text-lg">ДЕЛО #047</span>
+            <span class="border border-sherlock-gold-dark text-sherlock-gold-dark text-xs px-2 py-1 font-cinzel">В ПРОЦЕССЕ</span>
+          </div>
+          <p class="font-cormorant text-sherlock-gold italic ">Исчезновение лондонского наследника.</p>
+        </div>
+
+        <div class="border border-dashed border-sherlock-border p-4 relative interactive-card" onclick="openModal('submit-case-modal')">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-cinzel text-sherlock-gold-light text-lg">ДЕЛО #048</span>
+            <span class="border border-sherlock-gold-dark text-sherlock-gold-dark text-xs px-2 py-1 font-cinzel">НА АНАЛИЗЕ</span>
+          </div>
+          <p class="font-cormorant text-sherlock-gold italic ">Письмо без отправителя и криптограмма.</p>
+        </div>
+
+        <div class="border border-dashed border-sherlock-border p-4 relative interactive-card" onclick="openModal('submit-case-modal')">
+          <!-- Wax Seal -->
+          <div class="absolute -right-4 -top-4 w-12 h-12 bg-[#8c2323] rounded-full opacity-90 flex items-center justify-center transform rotate-12 border-2 border-[#5a1515] pointer-events-none z-20 shadow-xl" style="filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.8));">
+            <span class="font-cinzel text-[#ffcccc] text-xs font-bold" style="opacity: 0.6">SH</span>
+          </div>
+
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-cinzel text-sherlock-gold-light text-lg">ДЕЛО #049</span>
+            <span class="stamp border-none p-0 text-xs text-sherlock-gold-dark rotate-0 opacity-100">КОНФИДЕНЦИАЛЬНО</span>
+          </div>
+          <p class="font-cormorant text-sherlock-gold italic ">Человек, которого никто не видел.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<!-- END: TESTIMONIALS & CURRENT CASES Section -->
+
+</main>
+
+<footer class="bg-sherlock-dark py-6 text-center text-sherlock-gold-dark text-xs font-cinzel tracking-widest border-t border-sherlock-border/30 relative z-10">
+<p>© 1895 SHERLOCK HOLMES КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</p>
+</footer>
+
+<!-- MODALS -->
+
+<!-- "ОБО МНЕ" Dossier Modal -->
+<div id="about-modal" class="dossier-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="dossier-content w-full max-w-4xl max-h-[90vh] overflow-y-auto paper-texture p-10 md:p-16 relative transform scale-y-0 opacity-0 origin-bottom">
+    <button onclick="closeModal('about-modal')" class="absolute top-6 right-6 font-cinzel text-sm border-b border-black text-black hover:text-black">ЗАКРЫТЬ ДОСЬЕ</button>
+    
+    <div class="border-b-2 border-black pb-4 mb-8">
+      <h2 class="font-cinzel text-3xl md:text-5xl font-bold tracking-tight text-center">SHERLOCK HOLMES</h2>
+      <h3 class="font-cinzel text-lg md:text-xl tracking-[0.2em] text-center mt-2">КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="col-span-2 font-cormorant text-lg space-y-4">
+        <p><strong class="font-cinzel text-sm mr-2">ИМЯ:</strong> Шерлок Холмс</p>
+        <p><strong class="font-cinzel text-sm mr-2">ПРОФЕССИЯ:</strong> Консультирующий детектив</p>
+        <p><strong class="font-cinzel text-sm mr-2">АДРЕС:</strong> Бейкер-стрит, 221Б, Лондон</p>
+        <p><strong class="font-cinzel text-sm mr-2">СПЕЦИАЛИЗАЦИЯ:</strong> Расследование сложных преступлений, розыск людей и предметов, анализ улик, восстановление событий по мельчайшим деталям.</p>
+        <p><strong class="font-cinzel text-sm mr-2">МЕТОД РАБОТЫ:</strong> Наблюдение, дедукция, анализ и проверка гипотез.</p>
+        <p><strong class="font-cinzel text-sm mr-2">ОТЛИЧИТЕЛЬНАЯ ЧЕРТА:</strong> Способность замечать то, что другие считают незначительным.</p>
+        
+        <div class="mt-8 border-t border-black pt-6">
+          <h4 class="font-cinzel text-xl mb-4 font-bold">ЗА ПРЕДЕЛАМИ РАССЛЕДОВАНИЙ</h4>
+          <ul class="list-none space-y-2">
+            <li>— Играю на скрипке.</li>
+            <li>— Занимаюсь боксом.</li>
+            <li>— Провожу химические эксперименты.</li>
+            <li>— Изучаю человеческое поведение.</li>
+            <li>— Читаю специализированную литературу.</li>
+            <li>— Предпочитаю трубку в моменты размышлений.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center relative">
+        <div class="absolute inset-0 border border-black transform rotate-3"></div>
+        <div class="absolute inset-0 border border-black transform -rotate-2"></div>
+        <div class="w-full aspect-[3/4] bg-black/10 flex items-center justify-center p-4 relative z-10" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCWolOWgJfD--XrzsFHoxzBkwwrg5x93TJqrp2q_kkwrKWtJZgS9S-6ZRcclrKqd0GrIOtkL8WU0tcyaVhJMFt-YB9u7Iw3t3sDdOokdYBV4ouLuuUgEfZ9Sl9Q1u1zxBXw2KoD0f1tAl3ZkvzqlumZ4z6SUSNCZ5j0RXaeFIUsHHZ0S15zqnRxBp9tI-hxtVAsDiLtkdhQvUJfF5rGIaLbw0-nGt5iYomMMoR55vCU222J5TyjItOj-w'); background-size: cover; background-position: center; filter: contrast(1.5) grayscale(1);">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- "ПЕРЕДАТЬ ДЕЛО" Modal -->
+<div id="submit-case-modal" class="dossier-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="dossier-content w-full max-w-2xl paper-texture p-10 md:p-12 relative transform scale-y-0 opacity-0 origin-bottom">
+    <button onclick="closeModal('submit-case-modal')" class="absolute top-6 right-6 font-cinzel text-sm border-b border-black text-black hover:text-black z-20">ОТМЕНИТЬ</button>
+    
+    <div id="form-container">
+      <div class="text-center mb-8">
+        <h2 class="font-cinzel text-3xl font-bold tracking-tight border-b-2 border-black inline-block pb-2">У ВАС ЕСТЬ ДЕЛО?</h2>
+        <p class="font-cormorant italic text-lg mt-4">Оставьте описание обстоятельств. Чем страннее дело — тем лучше.</p>
+      </div>
+
+      <form onsubmit="submitCase(event)" class="space-y-6 font-cormorant text-lg text-black">
+        <div>
+          <label class="block font-cinzel text-xs font-bold mb-1">ВАШЕ ИМЯ</label>
+          <input type="text" required class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 text-black placeholder-black" placeholder="Запись для архива..."/>
+        </div>
+        <div>
+          <label class="block font-cinzel text-xs font-bold mb-1">КРАТКОЕ ОПИСАНИЕ ДЕЛА</label>
+          <input type="text" required class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 text-black placeholder-black" placeholder="Суть проблемы..."/>
+        </div>
+        <div>
+          <label class="block font-cinzel text-xs font-bold mb-1">ЧТО ПРОИЗОШЛО?</label>
+          <textarea required rows="2" class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 resize-none text-black placeholder-black" placeholder="Детали происшествия..."></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-cinzel text-xs font-bold mb-1">КОГДА ЭТО ПРОИЗОШЛО?</label>
+            <input type="text" class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 text-black placeholder-black"/>
+          </div>
+          <div>
+            <label class="block font-cinzel text-xs font-bold mb-1">ЕСТЬ ЛИ ПОДОЗРЕВАЕМЫЕ?</label>
+            <input type="text" class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 text-black placeholder-black"/>
+          </div>
+        </div>
+        <div>
+          <label class="block font-cinzel text-xs font-bold mb-1">КАКИЕ УЛИКИ У ВАС ЕСТЬ?</label>
+          <textarea rows="2" class="w-full bg-transparent border-b border-black focus:border-black focus:ring-0 px-0 py-2 resize-none text-black placeholder-black" placeholder="Список найденных предметов или следов..."></textarea>
+        </div>
+        
+        <div class="pt-6 text-center">
+          <button type="submit" class="font-cinzel border-2 border-black text-black py-3 px-12 text-sm tracking-widest hover:bg-black hover:text-[#f4ebd8] transition-colors duration-300 font-bold">
+            ПЕРЕДАТЬ ДОСЬЕ
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div id="success-message" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-[#f4ebd8] z-10">
+      <div class="stamp border-[6px] text-4xl p-4 rotate-12 mb-6">ДЕЛО ПРИНЯТО</div>
+      <p class="font-cinzel text-xl text-black font-bold mb-2">Дело принято.</p>
+      <p class="font-cormorant italic text-black text-lg">Ожидайте дальнейших указаний.</p>
+    </div>
+  </div>
+</div>
+
+<!-- "КОНТАКТЫ" Modal -->
+<div id="contact-modal" class="dossier-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="dossier-content w-full max-w-md paper-texture p-10 text-center relative transform scale-y-0 opacity-0 origin-bottom">
+    <button onclick="closeModal('contact-modal')" class="absolute top-4 right-4 font-cinzel text-xs border-b border-black text-black hover:text-black">ЗАКРЫТЬ</button>
+    <div class="border border-black p-8 m-2">
+      <h3 class="font-cinzel text-xl font-bold mb-2">SHERLOCK HOLMES</h3>
+      <p class="font-cinzel text-xs tracking-widest mb-6">КОНСУЛЬТИРУЮЩИЙ ДЕТЕКТИВ</p>
+      <p class="font-cormorant text-lg mb-6 text-black font-bold">БЕЙКЕР-СТРИТ, 221Б<br/>ЛОНДОН</p>
+      <div class="w-16 h-[2px] bg-black mx-auto mb-6"></div>
+      <p class="font-cormorant italic text-sm text-black font-bold">Для дел, требующих конфиденциальности, используйте форму передачи дела.</p>
+      <button onclick="closeModal('contact-modal'); setTimeout(() => openModal('submit-case-modal'), 500);" class="mt-6 font-cinzel text-xs border-b border-black text-black hover:text-black font-bold">ОТКРЫТЬ ФОРМУ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    const content = modal.querySelector('.dossier-content');
+    modal.classList.add('active');
+    
+    // Reset success state if opening submit form
+    if (id === 'submit-case-modal') {
+      document.getElementById('form-container').classList.remove('hidden');
+      document.getElementById('success-message').classList.add('hidden');
+    }
+
+    // Force reflow
+    void content.offsetWidth;
+    content.classList.remove('dossier-close');
+    content.classList.add('dossier-open');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    const content = modal.querySelector('.dossier-content');
+    
+    content.classList.remove('dossier-open');
+    content.classList.add('dossier-close');
+    
+    setTimeout(() => {
+      modal.classList.remove('active');
+    }, 800);
+  }
+
+  function submitCase(e) {
+    e.preventDefault();
+    document.getElementById('form-container').classList.add('hidden');
+    document.getElementById('success-message').classList.remove('hidden');
+    
+    setTimeout(() => {
+      closeModal('submit-case-modal');
+    }, 3000);
+  }
+
+  function toggleCase(element) {
+    const details = element.querySelector('.case-details');
+    if (details.classList.contains('hidden')) {
+      details.classList.remove('hidden');
+      details.style.maxHeight = '0px';
+      details.style.opacity = '0';
+      
+      // Animate expansion
+      setTimeout(() => {
+        details.style.transition = 'all 0.5s ease';
+        details.style.maxHeight = '500px';
+        details.style.opacity = '1';
+      }, 10);
+    } else {
+      details.style.maxHeight = '0px';
+      details.style.opacity = '0';
+      setTimeout(() => {
+        details.classList.add('hidden');
+      }, 500);
+    }
+  }
+
+  function toggleMethod(element) {
+    const desc = element.querySelector('.method-desc');
+    const allDescs = document.querySelectorAll('.method-desc');
+    
+    // Close others
+    allDescs.forEach(d => {
+      if(d !== desc) {
+        d.style.height = '0px';
+        d.style.opacity = '0';
+        d.style.paddingTop = '0px';
+      }
+    });
+
+    if (desc.style.height === '0px' || desc.style.height === '') {
+      desc.style.height = '60px';
+      desc.style.opacity = '1';
+      desc.style.paddingTop = '10px';
+    } else {
+      desc.style.height = '0px';
+      desc.style.opacity = '0';
+      desc.style.paddingTop = '0px';
+    }
+  }
+
+  function toggleSpec(element) {
+    const full = element.querySelector('.spec-full');
+    if (full.classList.contains('hidden')) {
+      full.classList.remove('hidden');
+    } else {
+      full.classList.add('hidden');
+    }
+  }
+
+  function toggleHobby(element) {
+    const desc = element.querySelector('.hobby-desc');
+    if (desc.classList.contains('hidden')) {
+      desc.classList.remove('hidden');
+    } else {
+      desc.classList.add('hidden');
+    }
+  }
+
+  function spawnBug(startX, startY) {
+    const ladybug = document.createElement('div');
+    ladybug.innerHTML = '<svg viewBox="0 0 100 100" width="20" height="20" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="50" cy="55" rx="35" ry="40" fill="#8e7954" />' +
+      '<circle cx="50" cy="20" r="15" fill="#3a3124" />' +
+      '<line x1="50" y1="25" x2="50" y2="95" stroke="#3a3124" stroke-width="2" />' +
+      '<circle cx="35" cy="45" r="5" fill="#3a3124" />' +
+      '<circle cx="65" cy="45" r="5" fill="#3a3124" />' +
+      '<circle cx="30" cy="70" r="5" fill="#3a3124" />' +
+      '<circle cx="70" cy="70" r="5" fill="#3a3124" />' +
+    '</svg>';
+    ladybug.style.position = 'absolute';
+    ladybug.style.left = startX + 'px';
+    ladybug.style.top = startY + 'px';
+    ladybug.style.zIndex = '99999';
+    ladybug.style.cursor = 'pointer';
+    ladybug.style.filter = 'drop-shadow(2px 2px 2px rgba(0,0,0,0.8))';
+    
+    document.body.appendChild(ladybug);
+    
+    let currentX = startX;
+    let currentY = startY;
+    
+    setTimeout(() => {
+      ladybug.onclick = function(e) {
+        e.stopPropagation();
+        const rect = ladybug.getBoundingClientRect();
+        const actualX = rect.left + window.scrollX + rect.width / 2;
+        const actualY = rect.top + window.scrollY + rect.height / 2;
+        spawnBug(actualX, actualY); // Clone out of current position
+        ladybug.onclick = null; // Only clone once per bug
+      };
+    }, 500);
+    
+    function moveBug() {
+      const docWidth = document.documentElement.scrollWidth;
+      const docHeight = document.documentElement.scrollHeight;
+      
+      const targetX = Math.random() * (docWidth - 60) + 30;
+      const targetY = Math.random() * (docHeight - 60) + 30;
+      
+      const dx = targetX - currentX;
+      const dy = targetY - currentY;
+      
+      let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      const speed = 70; // Slower speed
+      const duration = distance / speed;
+      
+      ladybug.style.transition = 'left ' + duration + 's linear, top ' + duration + 's linear, transform 0.2s ease';
+      ladybug.style.transform = 'translate(-50%, -50%) rotate(' + angle + 'deg)';
+      ladybug.style.left = targetX + 'px';
+      ladybug.style.top = targetY + 'px';
+      
+      currentX = targetX;
+      currentY = targetY;
+      
+      setTimeout(moveBug, duration * 1000);
+    }
+    
+    setTimeout(moveBug, 50);
+  }
+
+  function releaseLadybug(event, hatElement) {
+    const startX = event.pageX;
+    const startY = event.pageY;
+    spawnBug(startX, startY);
+  }
+</script>
+</body></html>
